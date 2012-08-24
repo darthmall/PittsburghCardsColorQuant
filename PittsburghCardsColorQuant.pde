@@ -1,10 +1,4 @@
-import toxi.data.csv.*;
-import toxi.data.feeds.*;
-import toxi.data.feeds.util.*;
-
 import toxi.color.*;
-import toxi.color.theory.*;
-
 import toxi.math.*;
 
 import java.awt.event.*;
@@ -13,10 +7,11 @@ int MARGIN = 5;
 
 int columns = 6;
 float rowHeight = 70.0;
-float tolerance = 0.33;
+float tolerance = 0.66;
 float scroll = 0.0;
 
 ArrayList<PImage> images;
+ArrayList<Histogram> histograms;
 
 void setup() {
   size(1024, 768);
@@ -26,7 +21,9 @@ void setup() {
       mouseWheel(mwe.getWheelRotation());
   }});
 
-  images = new ArrayList<PImage>();  
+  images = new ArrayList<PImage>();
+  histograms = new ArrayList<Histogram>();
+
   File folder = new File(dataPath("img"));
   File[] imageFiles = folder.listFiles();
   
@@ -38,8 +35,9 @@ void setup() {
         if (img.height > rowHeight) {
           rowHeight = img.height;
         }
-
+        
         images.add(img);
+        histograms.add(Histogram.newFromARGBArray(img.pixels, img.pixels.length/10, tolerance, true));
       }
     }
   }
@@ -56,6 +54,7 @@ void draw() {
   
   for (int i = 0; i < images.size(); i++) {
     PImage img = images.get(i);
+
     float x = MARGIN + (i % columns) * colW;
     float y = MARGIN + (i / columns) * rowH;
     float aspect = float(img.width) / img.height;
@@ -63,6 +62,20 @@ void draw() {
     float h = (w / aspect) - (2 * MARGIN);
 
     image(img, x, y, w, h);
+    
+    noStroke();
+
+    Histogram hist = histograms.get(i);
+    int numColors = hist.getEntries().size();
+
+    for (HistEntry e : hist) {
+      TColor c = e.getColor();
+
+      fill(c.toARGB());
+
+      rect(x, y + h + MARGIN, w * e.getFrequency(), 20);
+      x += w * e.getFrequency();
+    }
   }
   
   popMatrix();
