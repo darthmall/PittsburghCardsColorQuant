@@ -7,17 +7,24 @@ import toxi.color.theory.*;
 
 import toxi.math.*;
 
+import java.awt.event.*;
+
 int MARGIN = 5;
 
 int columns = 6;
 float rowHeight = 70.0;
 float tolerance = 0.33;
+float scroll = 0.0;
 
 ArrayList<PImage> images;
 
 void setup() {
   size(1024, 768);
-  background(255);
+
+  addMouseWheelListener(new MouseWheelListener() { 
+    public void mouseWheelMoved(MouseWheelEvent mwe) { 
+      mouseWheel(mwe.getWheelRotation());
+  }});
 
   images = new ArrayList<PImage>();  
   File folder = new File(dataPath("img"));
@@ -36,16 +43,17 @@ void setup() {
       }
     }
   }
-  
-  noLoop();
 }
 
 void draw() {
+  background(255);
+
   float colW = width / float(columns);
   float rowH = rowHeight / float(columns);
 
-  println(String.format("cell: %f, %f", colW, rowH));
-
+  pushMatrix();
+  translate(0, scroll);
+  
   for (int i = 0; i < images.size(); i++) {
     PImage img = images.get(i);
     float x = MARGIN + (i % columns) * colW;
@@ -54,9 +62,14 @@ void draw() {
     float w = colW - (2 * MARGIN);
     float h = (w / aspect) - (2 * MARGIN);
 
-    println(String.format("(%f, %f, %f, %f)", x, y, w, h));
     image(img, x, y, w, h);
   }
+  
+  popMatrix();
 }
 
+void mouseWheel(int delta) {
+  scroll -= delta;
+  scroll = min(0, scroll);
+}
 
