@@ -25,13 +25,17 @@ with file(args.datafile, 'r') as f:
         for i in range(1, len(line[1:]), 2):
             colors.append({
                 'color': line[i],
-                'frequency': line[i + 1]
+                'frequency': float(line[i + 1])
                 })
+
 
         doc = {
             '_id': line[0],
             'colors': colors,
-            'date': '{}-{}'.format(line[0][:4], line[0][4:6])
+            'date': '{}-{}'.format(line[0][:4], line[0][4:6]),
         }
 
-        db.save(doc)
+        docId, docRev = db.save(doc)
+
+        with file('data/img/{}.png'.format(docId), 'r') as attachment:
+            db.put_attachment(db[docId], attachment, 'card.png')
